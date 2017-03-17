@@ -80,7 +80,7 @@ func getMemberRepos() []*github.Repository {
 }
 func timePtr(t time.Time) *time.Time { return &t }
 
-func CreateMilestone(title string, desc string, date string) {
+func CreateMilestone(title string, desc string, date time.Time) {
 	if matcher == nil {
 		println("Error : matcher should be set")
 		return
@@ -88,15 +88,10 @@ func CreateMilestone(title string, desc string, date string) {
 	var allRepos []*github.Repository
 
 	allRepos = append(getOwnedRepos(), getMemberRepos()...)
-	t, err := time.Parse("02-01-2006", date)
-	if err != nil {
-		println("Error : date should be formated like this : dayday-monthmonth-yearyearyear")
-		return
-	}
 	m := &github.Milestone{
 		Title:       github.String(title),
 		Description: github.String(desc),
-		DueOn:       timePtr(t),
+		DueOn:       timePtr(date),
 	}
 	for _, r := range allRepos {
 		m, _, err := client.Issues.CreateMilestone(ctx, *r.Owner.Login, *r.Name, m)
