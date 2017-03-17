@@ -1,6 +1,7 @@
 package main
 
 func main() {
-	CreateMilestone("Title", "")
+	SetRepoMatcher("opentrends-")
+	CreateMilestone("Title", "", "05-09-1995")
 	RemoveMilestone("Title")
 }
