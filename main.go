@@ -12,7 +12,6 @@ func main() {
 	rm := flag.Bool("remove", false, "remove milestone")
 
 	flag.Parse()
-	SetRepoMatcher("opentrends-")
 
 	if *rm {
 		if *title == "" {

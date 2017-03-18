@@ -6,14 +6,11 @@ import (
 	"golang.org/x/oauth2"
 	"io/ioutil"
 	"os"
-	"regexp"
-	"strings"
 	"time"
 )
 
 var client *github.Client = nil
 var ctx context.Context
-var matcher *string
 
 func InitClient() {
 	if client != nil {
@@ -32,13 +29,6 @@ func InitClient() {
 	tc := oauth2.NewClient(ctx, ts)
 	client = github.NewClient(tc)
 }
-func SetRepoMatcher(pattern string) {
-	a := []string{
-		pattern,
-		".*",
-	}
-	matcher = github.String(strings.Join(a, ""))
-}
 
 func getOwnedRepos() []*github.Repository {
 	InitClient()
@@ -52,42 +42,17 @@ func getOwnedRepos() []*github.Repository {
 		return ret
 	}
 	for _, r := range repos {
-		if matched, _ := regexp.Match(*matcher, []byte(*r.Name)); matched {
-			ret = append(ret, r)
-		}
+		ret = append(ret, r)
 	}
 	return ret
 }
 
-func getMemberRepos() []*github.Repository {
-	InitClient()
-	var ret []*github.Repository
-	opt := &github.RepositoryListOptions{
-		Type: "member",
-	}
-	repos, _, err := client.Repositories.List(ctx, "", opt)
-	if err != nil {
-		println(err)
-		return ret
-	}
-	for _, r := range repos {
-		if matched, _ := regexp.Match(*matcher, []byte(*r.Name)); matched {
-			ret = append(ret, r)
-		}
-	}
-
-	return ret
-}
 func timePtr(t time.Time) *time.Time { return &t }
 
 func CreateMilestone(title string, desc string, date time.Time) {
-	if matcher == nil {
-		println("Error : matcher should be set")
-		return
-	}
 	var allRepos []*github.Repository
 
-	allRepos = append(getOwnedRepos(), getMemberRepos()...)
+	allRepos = getOwnedRepos()
 	m := &github.Milestone{
 		Title:       github.String(title),
 		Description: github.String(desc),
@@ -104,11 +69,7 @@ func CreateMilestone(title string, desc string, date time.Time) {
 }
 
 func RemoveMilestone(title string) {
-	if matcher == nil {
-		println("Error : matcher should be set")
-		return
-	}
-	for _, repo := range append(getOwnedRepos(), getMemberRepos()...) {
+	for _, repo := range getOwnedRepos() {
 		milestones, _, err := client.Issues.ListMilestones(ctx, *repo.Owner.Login, *repo.Name, nil)
 		if err != nil {
 			println(err.Error())
@@ -116,7 +77,7 @@ func RemoveMilestone(title string) {
 		}
 		for _, milestone := range milestones {
 			if *milestone.Title == title {
-				println("Removed milestone", *milestone.Title, "from repository", *repo.Name)
+				println("Removed milestone", *milestone.Title, "n°", milestone.GetNumber(), "from repository", *repo.Name)
 				_, err := client.Issues.DeleteMilestone(ctx, *repo.Owner.Login, *repo.Name, *milestone.Number)
 				if err != nil {
 					println(err.Error())
