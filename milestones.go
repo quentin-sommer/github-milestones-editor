@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"time"
 )
 
@@ -49,38 +51,51 @@ func getOwnedRepos() []*github.Repository {
 
 func timePtr(t time.Time) *time.Time { return &t }
 
-func CreateMilestone(title string, desc string, date time.Time) {
-	var allRepos []*github.Repository
+func repoMatchesMask(repoName, mask string) bool {
+	matched, err := regexp.MatchString(mask, repoName)
+	if err != nil {
+		fmt.Println("Error in Regex parsing", err)
+		return false
+	}
+	return matched
+}
 
-	allRepos = getOwnedRepos()
+func CreateMilestone(title string, desc string, date time.Time, mask string) {
+	var repositories []*github.Repository
+
+	repositories = getOwnedRepos()
 	m := &github.Milestone{
 		Title:       github.String(title),
 		Description: github.String(desc),
 		DueOn:       timePtr(date),
 	}
-	for _, r := range allRepos {
-		m, _, err := client.Issues.CreateMilestone(ctx, *r.Owner.Login, *r.Name, m)
-		if err != nil {
-			println(err.Error())
-		} else {
-			println("Created milestone", *m.Title, "at", *m.HTMLURL)
+	for _, r := range repositories {
+		if repoMatchesMask(r.GetName(), mask) {
+			m, _, err := client.Issues.CreateMilestone(ctx, *r.Owner.Login, *r.Name, m)
+			if err != nil {
+				println(err.Error())
+			} else {
+				println("Created milestone", *m.Title, "n°", m.GetNumber(), "at ", *m.HTMLURL)
+			}
 		}
 	}
 }
 
-func RemoveMilestone(title string) {
-	for _, repo := range getOwnedRepos() {
-		milestones, _, err := client.Issues.ListMilestones(ctx, *repo.Owner.Login, *repo.Name, nil)
-		if err != nil {
-			println(err.Error())
-			return
-		}
-		for _, milestone := range milestones {
-			if *milestone.Title == title {
-				println("Removed milestone", *milestone.Title, "n°", milestone.GetNumber(), "from repository", *repo.Name)
-				_, err := client.Issues.DeleteMilestone(ctx, *repo.Owner.Login, *repo.Name, *milestone.Number)
-				if err != nil {
-					println(err.Error())
+func RemoveMilestone(title, mask string) {
+	for _, r := range getOwnedRepos() {
+		if repoMatchesMask(r.GetName(), mask) {
+			milestones, _, err := client.Issues.ListMilestones(ctx, *r.Owner.Login, *r.Name, nil)
+			if err != nil {
+				println(err.Error())
+				return
+			}
+			for _, milestone := range milestones {
+				if *milestone.Title == title {
+					println("Removed milestone", *milestone.Title, "n°", milestone.GetNumber(), "from repository", *r.Name)
+					_, err := client.Issues.DeleteMilestone(ctx, *r.Owner.Login, *r.Name, *milestone.Number)
+					if err != nil {
+						println(err.Error())
+					}
 				}
 			}
 		}

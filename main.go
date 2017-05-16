@@ -10,6 +10,7 @@ func main() {
 	description := flag.String("desc", "", "milestone desription")
 	date := flag.String("date", "", "milestone due date")
 	rm := flag.Bool("remove", false, "remove milestone")
+	mask := flag.String("mask", "", "regex mask to match repos")
 
 	flag.Parse()
 
@@ -18,7 +19,7 @@ func main() {
 			println("title is required when removing")
 			return
 		}
-		RemoveMilestone(*title)
+		RemoveMilestone(*title, *mask)
 		return
 	}
 	if *title == "" || *description == "" || *date == "" {
@@ -31,5 +32,5 @@ func main() {
 		println("Error : date should be formated like this : yyyy-mm-dd")
 		return
 	}
-	CreateMilestone(*title, *description, t)
+	CreateMilestone(*title, *description, t, *mask)
 }
