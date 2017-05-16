@@ -62,7 +62,7 @@ func repoMatchesMask(repoName, mask string) bool {
 
 func CreateMilestone(title string, desc string, date time.Time, mask string) {
 	var repositories []*github.Repository
-
+	i := 0
 	repositories = getOwnedRepos()
 	m := &github.Milestone{
 		Title:       github.String(title),
@@ -76,12 +76,15 @@ func CreateMilestone(title string, desc string, date time.Time, mask string) {
 				println(err.Error())
 			} else {
 				println("Created milestone", *m.Title, "n°", m.GetNumber(), "at ", *m.HTMLURL)
+				i += 1
 			}
 		}
 	}
+	fmt.Println("Created", i, "milestones")
 }
 
 func RemoveMilestone(title, mask string) {
+	i := 0
 	for _, r := range getOwnedRepos() {
 		if repoMatchesMask(r.GetName(), mask) {
 			milestones, _, err := client.Issues.ListMilestones(ctx, *r.Owner.Login, *r.Name, nil)
@@ -91,13 +94,16 @@ func RemoveMilestone(title, mask string) {
 			}
 			for _, milestone := range milestones {
 				if *milestone.Title == title {
-					println("Removed milestone", *milestone.Title, "n°", milestone.GetNumber(), "from repository", *r.Name)
 					_, err := client.Issues.DeleteMilestone(ctx, *r.Owner.Login, *r.Name, *milestone.Number)
 					if err != nil {
 						println(err.Error())
+					} else {
+						println("Removed milestone", *milestone.Title, "n°", milestone.GetNumber(), "from repository", *r.Name)
+						i += 1
 					}
 				}
 			}
 		}
 	}
+	fmt.Println("Removed", i, "milestones")
 }
