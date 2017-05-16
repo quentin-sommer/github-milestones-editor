@@ -6,14 +6,16 @@
 
 ## Usage
 
+The mask will be passed to a regex evaluator, so you can use all the power of regular expressions
+
 ```
 //when creating milestones
-./main -title=title -desc=desc -date=25-01-2017 -mask="my-mask*"
+./main -title=title -desc=desc -date=2017-25-01 -mask="my-mask*"
 
 //when deleting milestones
 ./main -remove -title=title -mask="my-mask*"
 
 // you can also use it on all your repositories
-./main -title=title -desc=desc -date=25-01-2017
+./main -title=title -desc=desc -date=2017-25-01
 ```
 :bangbang: date format : yyyy-dd-mm
