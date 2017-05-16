@@ -15,7 +15,7 @@ func main() {
 
 	if *rm {
 		if *title == "" {
-			println("when removing title is required")
+			println("title is required when removing")
 			return
 		}
 		RemoveMilestone(*title)
@@ -26,9 +26,9 @@ func main() {
 		return
 	}
 
-	t, err := time.Parse("02-01-2006", *date)
+	t, err := time.Parse("2006-01-02", *date)
 	if err != nil {
-		println("Error : date should be formated like this : dayday-monthmonth-yearyearyear")
+		println("Error : date should be formated like this : yyyy-mm-dd")
 		return
 	}
 	CreateMilestone(*title, *description, t)
