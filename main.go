@@ -23,7 +23,7 @@ func main() {
 		return
 	}
 	if *title == "" || *description == "" {
-		println("title and desc")
+		println("title and desc are required")
 		return
 	}
 
