@@ -22,15 +22,20 @@ func main() {
 		RemoveMilestone(*title, *mask)
 		return
 	}
-	if *title == "" || *description == "" || *date == "" {
-		println("title, desc and due are required")
+	if *title == "" || *description == "" {
+		println("title and desc")
 		return
 	}
 
-	t, err := time.Parse("2006-01-02", *date)
-	if err != nil {
-		println("Error : date should be formated like this : yyyy-mm-dd")
-		return
+	if *date != "" {
+		t, err := time.Parse("2006-01-02", *date)
+		if err != nil {
+			println("Error : date should be formated like this : yyyy-mm-dd")
+			return
+		}
+		CreateMilestone(*title, *description, &t, *mask)
+	} else {
+		CreateMilestone(*title, *description, nil, *mask)
 	}
-	CreateMilestone(*title, *description, t, *mask)
+
 }

@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/google/go-github/github"
-	"golang.org/x/oauth2"
 	"io/ioutil"
 	"os"
 	"regexp"
 	"time"
+
+	"github.com/google/go-github/github"
+	"golang.org/x/oauth2"
 )
 
 var client *github.Client = nil
@@ -60,14 +61,16 @@ func repoMatchesMask(repoName, mask string) bool {
 	return matched
 }
 
-func CreateMilestone(title string, desc string, date time.Time, mask string) {
+func CreateMilestone(title string, desc string, date *time.Time, mask string) {
 	var repositories []*github.Repository
 	i := 0
 	repositories = getOwnedRepos()
 	m := &github.Milestone{
 		Title:       github.String(title),
 		Description: github.String(desc),
-		DueOn:       timePtr(date),
+	}
+	if date != nil {
+		m.DueOn = date
 	}
 	for _, r := range repositories {
 		if repoMatchesMask(r.GetName(), mask) {
